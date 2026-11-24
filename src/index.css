@@ -6,3 +6,18 @@ body {
   color: #f8fafc;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.fade-up {
+  animation: fade-up 0.4s ease both;
+}
