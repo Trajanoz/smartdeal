@@ -33,37 +33,38 @@ export const STORES: Store[] = [
   {
     id: "pichau",
     name: "Pichau",
-    confirmed: false,
+    confirmed: true,
     buildUrl: (q) => `https://www.pichau.com.br/search?q=${enc(q)}`,
   },
   {
     id: "amazon",
     name: "Amazon Brasil",
-    confirmed: false,
+    confirmed: true,
     buildUrl: (q) => `https://www.amazon.com.br/s?k=${plus(q)}`,
   },
   {
     id: "mercadolivre",
     name: "Mercado Livre",
-    confirmed: false,
+    confirmed: true,
     buildUrl: (q) => `https://lista.mercadolivre.com.br/${slug(q)}`,
   },
   {
     id: "casasbahia",
-    name: "Casas Bahia",
-    confirmed: false,
-    buildUrl: (q) => `https://www.casasbahia.com.br/${slug(q)}/b`,
+    name: "Casas Bahia (via Google)",
+    confirmed: true,
+    buildUrl: (q) =>
+      `https://www.google.com/search?q=${plus(`site:casasbahia.com.br ${clean(q)}`)}`,
   },
   {
     id: "shopee",
     name: "Shopee",
-    confirmed: false,
+    confirmed: true,
     buildUrl: (q) => `https://shopee.com.br/search?keyword=${enc(q)}`,
   },
   {
     id: "aliexpress",
     name: "AliExpress",
-    confirmed: false,
+    confirmed: true,
     buildUrl: (q) =>
       `https://pt.aliexpress.com/wholesale?SearchText=${plus(q)}`,
   },
