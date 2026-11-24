@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "./supabase";
+import { useSession } from "./useSession";
 
 export interface PricePoint {
   price: number;
@@ -24,9 +26,19 @@ export interface NewWishItem {
   currentPrice: number | null;
 }
 
+interface Row {
+  id: string;
+  name: string;
+  category: string;
+  store: string;
+  url: string;
+  target_price: number | string | null;
+  wishlist_prices: { price: number | string; recorded_at: string }[] | null;
+}
+
 const KEY = "smartdeal:wishlist:v1";
 
-function load(): WishItem[] {
+function loadLocal(): WishItem[] {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return [];
@@ -35,6 +47,21 @@ function load(): WishItem[] {
   } catch {
     return [];
   }
+}
+
+function toWishItem(row: Row): WishItem {
+  const history = [...(row.wishlist_prices ?? [])]
+    .sort((a, b) => a.recorded_at.localeCompare(b.recorded_at))
+    .map((p) => ({ price: Number(p.price), date: p.recorded_at }));
+  return {
+    id: row.id,
+    name: row.name,
+    category: row.category,
+    store: row.store,
+    url: row.url,
+    targetPrice: row.target_price === null ? null : Number(row.target_price),
+    history,
+  };
 }
 
 export function parsePrice(text: string): number | null {
@@ -67,18 +94,78 @@ export function formatDate(iso: string): string {
 }
 
 export function useWishlist() {
-  const [items, setItems] = useState<WishItem[]>(load);
+  const { session } = useSession();
+  const userId = session?.user.id ?? null;
+  const cloud = supabase !== null && userId !== null;
+
+  const [localItems, setLocalItems] = useState<WishItem[]>(loadLocal);
+  const [cloudItems, setCloudItems] = useState<WishItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     try {
-      localStorage.setItem(KEY, JSON.stringify(items));
+      localStorage.setItem(KEY, JSON.stringify(localItems));
     } catch {
       // sem armazenamento disponível: a lista continua funcionando nesta visita
     }
-  }, [items]);
+  }, [localItems]);
 
-  function addItem(data: NewWishItem) {
-    const now = new Date().toISOString();
+  const reload = useCallback(async () => {
+    if (!supabase || !userId) return;
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("wishlist_items")
+      .select(
+        "id, name, category, store, url, target_price, created_at, wishlist_prices(price, recorded_at)"
+      )
+      .order("created_at", { ascending: false });
+    if (error) {
+      setMessage("Não foi possível carregar sua lista: " + error.message);
+    } else {
+      setCloudItems(((data ?? []) as unknown as Row[]).map(toWishItem));
+      setMessage("");
+    }
+    setLoading(false);
+  }, [userId]);
+
+  useEffect(() => {
+    if (cloud) {
+      reload();
+    } else {
+      setCloudItems([]);
+    }
+  }, [cloud, reload]);
+
+  async function addItem(data: NewWishItem) {
+    if (cloud && supabase) {
+      const { data: row, error } = await supabase
+        .from("wishlist_items")
+        .insert({
+          name: data.name,
+          category: data.category,
+          store: data.store,
+          url: data.url,
+          target_price: data.targetPrice,
+        })
+        .select("id")
+        .single();
+      if (error || !row) {
+        setMessage("Não foi possível salvar o produto: " + (error?.message ?? ""));
+        return;
+      }
+      if (data.currentPrice !== null) {
+        const { error: priceError } = await supabase
+          .from("wishlist_prices")
+          .insert({ item_id: row.id, price: data.currentPrice });
+        if (priceError) {
+          setMessage("O produto foi salvo, mas o preço não: " + priceError.message);
+        }
+      }
+      await reload();
+      return;
+    }
+
     const item: WishItem = {
       id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
       name: data.name,
@@ -88,24 +175,101 @@ export function useWishlist() {
       targetPrice: data.targetPrice,
       history:
         data.currentPrice !== null
-          ? [{ price: data.currentPrice, date: now }]
+          ? [{ price: data.currentPrice, date: new Date().toISOString() }]
           : [],
     };
-    setItems((prev) => [item, ...prev]);
+    setLocalItems((prev) => [item, ...prev]);
   }
 
-  function removeItem(id: string) {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+  async function removeItem(id: string) {
+    if (cloud && supabase) {
+      const { error } = await supabase
+        .from("wishlist_items")
+        .delete()
+        .eq("id", id);
+      if (error) {
+        setMessage("Não foi possível remover o produto: " + error.message);
+        return;
+      }
+      await reload();
+      return;
+    }
+    setLocalItems((prev) => prev.filter((i) => i.id !== id));
   }
 
-  function addPrice(id: string, price: number) {
+  async function addPrice(id: string, price: number) {
+    if (cloud && supabase) {
+      const { error } = await supabase
+        .from("wishlist_prices")
+        .insert({ item_id: id, price });
+      if (error) {
+        setMessage("Não foi possível registrar o preço: " + error.message);
+        return;
+      }
+      await reload();
+      return;
+    }
     const point: PricePoint = { price, date: new Date().toISOString() };
-    setItems((prev) =>
+    setLocalItems((prev) =>
       prev.map((i) =>
         i.id === id ? { ...i, history: [...i.history, point] } : i
       )
     );
   }
 
-  return { items, addItem, removeItem, addPrice };
+  async function importLocal() {
+    if (!cloud || !supabase || localItems.length === 0) return;
+    setLoading(true);
+    for (const item of localItems) {
+      const { data: row, error } = await supabase
+        .from("wishlist_items")
+        .insert({
+          name: item.name,
+          category: item.category,
+          store: item.store,
+          url: item.url,
+          target_price: item.targetPrice,
+        })
+        .select("id")
+        .single();
+      if (error || !row) {
+        setMessage(
+          "A importação parou em \"" + item.name + "\": " + (error?.message ?? "")
+        );
+        setLoading(false);
+        await reload();
+        return;
+      }
+      if (item.history.length > 0) {
+        const { error: priceError } = await supabase
+          .from("wishlist_prices")
+          .insert(
+            item.history.map((p) => ({
+              item_id: row.id,
+              price: p.price,
+              recorded_at: p.date,
+            }))
+          );
+        if (priceError) {
+          setMessage(
+            "O produto \"" + item.name + "\" foi importado, mas o histórico não: " + priceError.message
+          );
+        }
+      }
+      setLocalItems((prev) => prev.filter((i) => i.id !== item.id));
+    }
+    await reload();
+  }
+
+  return {
+    items: cloud ? cloudItems : localItems,
+    cloud,
+    loading,
+    message,
+    pendingLocal: cloud ? localItems.length : 0,
+    addItem,
+    removeItem,
+    addPrice,
+    importLocal,
+  };
 }
