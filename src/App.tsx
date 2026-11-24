@@ -27,7 +27,7 @@ export default function App() {
     if (page === "ofertas") return <BuscarOfertas />;
     if (page === "desejos") return <ListaDesejos />;
     if (page === "cupons") return <Cupons onNavigate={go} />;
-    if (page === "builder") return <PcBuilder />;
+    if (page === "builder") return <PcBuilder onNavigate={go} />;
     if (page === "recomendados") return <PcsRecomendados onNavigate={go} />;
     if (page === "perfil") return <MeuPerfil />;
     return <EmBreve item={current} />;
