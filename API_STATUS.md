@@ -7,15 +7,15 @@ Cada loja abre a própria página de busca com o termo digitado. Não há extra�
 
 | Loja | Situação |
 |---|---|
-| KaBuM! | Formato confirmado |
-| TerabyteShop | Formato confirmado |
-| Magazine Luiza | Formato confirmado |
-| Pichau | Formato não confirmado (testar) |
-| Amazon Brasil | Formato não confirmado (testar) |
-| Mercado Livre | Formato não confirmado (testar) |
-| Casas Bahia | Formato não confirmado (testar) |
-| Shopee | Formato não confirmado (testar) |
-| AliExpress | Formato não confirmado (testar) |
+| KaBuM! | Funcionando |
+| TerabyteShop | Funcionando |
+| Magazine Luiza | Funcionando |
+| Pichau | Funcionando (testado pelo usuário) |
+| Amazon Brasil | Funcionando (testado pelo usuário) |
+| Mercado Livre | Funcionando (testado pelo usuário) |
+| Shopee | Funcionando (testado pelo usuário) |
+| AliExpress | Funcionando (testado pelo usuário) |
+| Casas Bahia | Limitação: o endereço de busca direto deu erro. Usa busca no Google restrita ao site da loja. Pode ser trocado quando houver um endereço de busca confirmado. |
 
 ## Demais integrações
 
