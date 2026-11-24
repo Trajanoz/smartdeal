@@ -21,8 +21,9 @@ Cada loja abre a própria página de busca com o termo digitado. Não há extra�
 
 | Integração | Situação | Observações |
 |---|---|---|
-| Supabase (banco e login) | Pendente | Projeto criado, ainda não conectado ao app. |
-| Preços das lojas | Pendente | Próximo passo: cadastro de preços com data de verificação. Integrações automáticas só quando permitidas pelas lojas e gratuitas. |
+| Supabase: login (e-mail e senha) | Funcionando | Cadastro com confirmação por e-mail. O plano gratuito limita o envio de e-mails. |
+| Supabase: lista de desejos | Em teste | Tabelas criadas com proteção RLS. Sem login, a lista fica salva no navegador. |
+| Preços das lojas | Pendente | Preços são registrados à mão pelo usuário. Integrações automáticas só quando permitidas pelas lojas e gratuitas. |
 | Cupons | Pendente | Sem verificação automática gratuita. Cupons ficarão como "não verificado" até haver confirmação. |
 | Benchmarks de FPS | Pendente | Somente dados reais registrados. Sem dados, o app informará "dados insuficientes". |
 | Atualização programada | Pendente | Será feita com GitHub Actions, de forma periódica e não em tempo real. |
