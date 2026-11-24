@@ -8,6 +8,7 @@ import ListaDesejos from "./pages/ListaDesejos";
 import Cupons from "./pages/Cupons";
 import PcBuilder from "./pages/PcBuilder";
 import PcsRecomendados from "./pages/PcsRecomendados";
+import StreamingAnalyzer from "./pages/StreamingAnalyzer";
 import MeuPerfil from "./pages/MeuPerfil";
 import EmBreve from "./pages/EmBreve";
 
@@ -29,6 +30,7 @@ export default function App() {
     if (page === "cupons") return <Cupons onNavigate={go} />;
     if (page === "builder") return <PcBuilder onNavigate={go} />;
     if (page === "recomendados") return <PcsRecomendados onNavigate={go} />;
+    if (page === "streaming") return <StreamingAnalyzer />;
     if (page === "perfil") return <MeuPerfil />;
     return <EmBreve item={current} />;
   }
