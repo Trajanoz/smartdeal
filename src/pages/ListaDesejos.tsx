@@ -6,6 +6,7 @@ import {
   BellRing,
   Info,
   TrendingDown,
+  CloudUpload,
 } from "lucide-react";
 import { STORES } from "../stores";
 import {
@@ -225,7 +226,17 @@ function WishCard({ item, onAddPrice, onRemove }: CardProps) {
 }
 
 export default function ListaDesejos() {
-  const { items, addItem, removeItem, addPrice } = useWishlist();
+  const {
+    items,
+    cloud,
+    loading,
+    message,
+    pendingLocal,
+    addItem,
+    removeItem,
+    addPrice,
+    importLocal,
+  } = useWishlist();
   const [name, setName] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [store, setStore] = useState(STORE_OPTIONS[0]);
@@ -278,12 +289,35 @@ export default function ListaDesejos() {
       <div className="mt-6 flex gap-3 rounded-2xl border border-[#3b82f6]/30 bg-[#3b82f6]/10 p-4 text-sm">
         <Info size={18} className="mt-0.5 shrink-0 text-[#3b82f6]" />
         <p className="text-[#cbd5e1]">
-          Os preços são os que você registra, conferindo no site da loja. A
-          lista fica salva neste navegador e neste aparelho. A sincronização
-          com sua conta chega quando conectarmos o login. O aviso de meta
-          atingida aparece aqui dentro do site.
+          {cloud
+            ? "Sua lista está salva na sua conta e aparece em qualquer aparelho em que você entrar. "
+            : "A lista fica salva neste navegador e neste aparelho. Para guardá-la na sua conta e ver em qualquer aparelho, entre em Meu Perfil. "}
+          Os preços são os que você registra, conferindo no site da loja. O
+          aviso de meta atingida aparece aqui dentro do site.
         </p>
       </div>
+
+      {pendingLocal > 0 && (
+        <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#8b5cf6]/30 bg-[#8b5cf6]/10 p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[#cbd5e1]">
+            Você tem {pendingLocal}{" "}
+            {pendingLocal === 1 ? "produto salvo" : "produtos salvos"} neste
+            navegador, ainda fora da sua conta.
+          </p>
+          <button
+            onClick={importLocal}
+            disabled={loading}
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#8b5cf6] px-4 py-2 font-semibold transition hover:bg-[#7c4ee8] disabled:opacity-60"
+          >
+            <CloudUpload size={16} />
+            Importar para minha conta
+          </button>
+        </div>
+      )}
+
+      {message !== "" && (
+        <p className="mt-4 text-sm text-[#ef4444]">{message}</p>
+      )}
 
       <form
         onSubmit={submit}
@@ -352,7 +386,9 @@ export default function ListaDesejos() {
         </button>
       </form>
 
-      {items.length === 0 ? (
+      {loading && items.length === 0 ? (
+        <p className="mt-8 text-sm text-[#94a3b8]">Carregando sua lista...</p>
+      ) : items.length === 0 ? (
         <div className="mt-8 rounded-2xl border border-dashed border-white/15 bg-[#171d2a] p-10 text-center text-sm text-[#94a3b8]">
           Sua lista está vazia. Adicione o primeiro produto acima.
         </div>
