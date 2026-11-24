@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react";
 import { NAV_ITEMS, type PageId } from "./navigation";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
+import BuscarOfertas from "./pages/BuscarOfertas";
 import EmBreve from "./pages/EmBreve";
 
 export default function App() {
@@ -14,6 +15,12 @@ export default function App() {
     setPage(id);
     setMenuOpen(false);
     window.scrollTo(0, 0);
+  }
+
+  function renderPage() {
+    if (page === "dashboard") return <Dashboard onNavigate={go} />;
+    if (page === "ofertas") return <BuscarOfertas />;
+    return <EmBreve item={current} />;
   }
 
   return (
@@ -40,11 +47,7 @@ export default function App() {
       </div>
 
       <main className="mx-auto w-full max-w-6xl flex-1 p-4 sm:p-8">
-        {page === "dashboard" ? (
-          <Dashboard onNavigate={go} />
-        ) : (
-          <EmBreve item={current} />
-        )}
+        {renderPage()}
       </main>
     </div>
   );
