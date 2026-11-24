@@ -4,6 +4,7 @@ import { NAV_ITEMS, type PageId } from "./navigation";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import BuscarOfertas from "./pages/BuscarOfertas";
+import ListaDesejos from "./pages/ListaDesejos";
 import EmBreve from "./pages/EmBreve";
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
   function renderPage() {
     if (page === "dashboard") return <Dashboard onNavigate={go} />;
     if (page === "ofertas") return <BuscarOfertas />;
+    if (page === "desejos") return <ListaDesejos />;
     return <EmBreve item={current} />;
   }
 
