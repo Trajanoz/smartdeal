@@ -5,6 +5,7 @@ import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import BuscarOfertas from "./pages/BuscarOfertas";
 import ListaDesejos from "./pages/ListaDesejos";
+import MeuPerfil from "./pages/MeuPerfil";
 import EmBreve from "./pages/EmBreve";
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
     if (page === "dashboard") return <Dashboard onNavigate={go} />;
     if (page === "ofertas") return <BuscarOfertas />;
     if (page === "desejos") return <ListaDesejos />;
+    if (page === "perfil") return <MeuPerfil />;
     return <EmBreve item={current} />;
   }
 
